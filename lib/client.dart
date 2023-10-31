@@ -1,3 +1,5 @@
+library fal_client;
+
 import './config.dart';
 import './exception.dart';
 import './http.dart';
@@ -30,6 +32,14 @@ class FalClient implements Client {
   FalClient({
     required this.config,
   }) : queue = QueueClient(config: config);
+
+  factory FalClient.withProxy(String proxyUrl) {
+    return FalClient(config: Config(proxyUrl: proxyUrl));
+  }
+
+  factory FalClient.withCredentials(String credentials) {
+    return FalClient(config: Config(credentials: credentials));
+  }
 
   @override
   Future<Map<String, dynamic>> run(
