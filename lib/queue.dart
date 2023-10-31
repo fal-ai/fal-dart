@@ -49,7 +49,7 @@ abstract class QueueStatus {
 }
 
 class InProgressStatus extends QueueStatus {
-  List<RequestLog> logs;
+  List<RequestLog>? logs;
 
   InProgressStatus({
     required String responseUrl,
@@ -67,7 +67,7 @@ class InProgressStatus extends QueueStatus {
 }
 
 class CompletedStatus extends QueueStatus {
-  List<RequestLog> logs;
+  List<RequestLog>? logs;
 
   CompletedStatus({
     required String responseUrl,
@@ -135,7 +135,10 @@ class QueueClient implements Queue {
     final result = await sendRequest(id,
         config: config,
         method: 'get',
-        path: '/fal/queue/requests/$requestId/status');
+        path: '/fal/queue/requests/$requestId/status',
+        input: {
+          'logs': logs ? '1' : '0',
+        });
     return QueueStatus.fromMap(result);
   }
 

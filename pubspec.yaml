@@ -2,6 +2,17 @@ name: fal_client
 description: A client library for fal.ai ML APIs
 version: 0.1.0
 homepage: fal.ai
+topics:
+  - machine learning
+  - artificial intelligence
+  - ml
+  - ai
+  - stable-diffusion
+  - sdxl
+  - whisper
+  - text-to-image
+  - image-to-text
+  - speech-to-text
 
 environment:
   sdk: '>=3.1.5 <4.0.0'

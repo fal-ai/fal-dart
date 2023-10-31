@@ -71,16 +71,20 @@ class FalClient implements Client {
       onEnqueue(requestId);
     }
 
-    return _pollForResult(id,
-        requestId: requestId,
-        pollInterval: pollInterval,
-        onQueueUpdate: onQueueUpdate,
-        timeout: timeout);
+    return _pollForResult(
+      id,
+      requestId: requestId,
+      logs: logs,
+      pollInterval: pollInterval,
+      timeout: timeout,
+      onQueueUpdate: onQueueUpdate,
+    );
   }
 
   Future<Map<String, dynamic>> _pollForResult(
     String id, {
     required String requestId,
+    required bool logs,
     required int pollInterval,
     required int timeout,
     Function(QueueStatus)? onQueueUpdate,
@@ -93,7 +97,8 @@ class FalClient implements Client {
             message: 'Request timed out after \$timeout milliseconds.',
             status: 408);
       }
-      final queueStatus = await queue.status(id, requestId: requestId);
+      final queueStatus =
+          await queue.status(id, requestId: requestId, logs: logs);
 
       if (onQueueUpdate != null) {
         onQueueUpdate(queueStatus);
@@ -106,5 +111,3 @@ class FalClient implements Client {
     }
   }
 }
-
-// final fal = FalClient(config: DEFAULT_CONFIG);
