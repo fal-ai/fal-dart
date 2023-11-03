@@ -19,6 +19,7 @@ environment:
   flutter: '>=1.17.0'
 
 dependencies:
+  cross_file: ^0.3.3+6
   flutter:
     sdk: flutter
   http: ^1.1.0
