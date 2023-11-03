@@ -8,6 +8,11 @@ import './queue.dart';
 abstract class Client {
   Queue get queue;
 
+  /// Run a function by its [id].
+  /// [method] is the HTTP method to use.
+  /// [path] is the path to append to the function url.
+  /// [input] is the input to the function.
+  /// Returns a map with the function response.
   Future<Map<String, dynamic>> run(
     String id, {
     String method = 'post',
@@ -17,6 +22,7 @@ abstract class Client {
 
   Future<Map<String, dynamic>> subscribe(
     String id, {
+    String path = '',
     Map<String, dynamic>? input,
     int pollInterval = 3000,
     bool logs = false,
@@ -58,13 +64,14 @@ class FalClient implements Client {
 
   @override
   Future<Map<String, dynamic>> subscribe(String id,
-      {Map<String, dynamic>? input,
+      {String path = '',
+      Map<String, dynamic>? input,
       int pollInterval = 3000, // 3 seconds
       int timeout = 300000, // 5 minutes
       bool logs = false,
       Function(String)? onEnqueue,
       Function(QueueStatus)? onQueueUpdate}) async {
-    final enqueued = await queue.submit(id, input: input);
+    final enqueued = await queue.submit(id, input: input, path: path);
     final requestId = enqueued.requestId;
 
     if (onEnqueue != null) {
@@ -94,7 +101,7 @@ class FalClient implements Client {
     while (true) {
       if (DateTime.now().isAfter(expiryTime)) {
         throw FalApiException(
-            message: 'Request timed out after \$timeout milliseconds.',
+            message: 'Request timed out after $timeout milliseconds.',
             status: 408);
       }
       final queueStatus =

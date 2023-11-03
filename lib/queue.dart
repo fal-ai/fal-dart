@@ -125,7 +125,7 @@ class QueueClient implements Queue {
   Future<EnqueueResult> submit(String id,
       {String path = '', Map<String, dynamic>? input}) async {
     final result = await sendRequest(id,
-        config: config, path: '$path/fal/queue/submit', input: input);
+        config: config, path: '/fal/queue/submit$path', input: input);
     return EnqueueResult.fromMap(result);
   }
 
