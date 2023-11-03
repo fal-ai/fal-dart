@@ -1,5 +1,7 @@
 library fal_client;
 
+import 'package:fal_client/storage.dart';
+
 import './config.dart';
 import './exception.dart';
 import './http.dart';
@@ -8,11 +10,8 @@ import './queue.dart';
 abstract class Client {
   Queue get queue;
 
-  /// Run a function by its [id].
-  /// [method] is the HTTP method to use.
-  /// [path] is the path to append to the function url.
-  /// [input] is the input to the function.
-  /// Returns a map with the function response.
+  Storage get storage;
+
   Future<Map<String, dynamic>> run(
     String id, {
     String method = 'post',
@@ -35,9 +34,13 @@ class FalClient implements Client {
   @override
   final Queue queue;
 
+  @override
+  final Storage storage;
+
   FalClient({
     required this.config,
-  }) : queue = QueueClient(config: config);
+  })  : queue = QueueClient(config: config),
+        storage = StorageClient(config: config);
 
   factory FalClient.withProxy(String proxyUrl) {
     return FalClient(config: Config(proxyUrl: proxyUrl));
@@ -54,11 +57,13 @@ class FalClient implements Client {
     String path = '',
     Map<String, dynamic>? input,
   }) async {
+    final transformedInput =
+        input != null ? await storage.transformInput(input) : null;
     return await sendRequest(
       id,
       config: config,
       method: method,
-      input: input,
+      input: transformedInput,
     );
   }
 
@@ -71,7 +76,10 @@ class FalClient implements Client {
       bool logs = false,
       Function(String)? onEnqueue,
       Function(QueueStatus)? onQueueUpdate}) async {
-    final enqueued = await queue.submit(id, input: input, path: path);
+    final transformedInput =
+        input != null ? await storage.transformInput(input) : null;
+    final enqueued =
+        await queue.submit(id, input: transformedInput, path: path);
     final requestId = enqueued.requestId;
 
     if (onEnqueue != null) {

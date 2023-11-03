@@ -5,6 +5,15 @@ import 'package:http/http.dart' as http;
 import './config.dart';
 import './exception.dart';
 
+bool isValidUrl(String url) {
+  try {
+    final uri = Uri.parse(url);
+    return uri.host.contains("fal.ai");
+  } catch (e) {
+    return false;
+  }
+}
+
 String buildUrl(
   String id, {
   required Config config,
@@ -19,7 +28,9 @@ String buildUrl(
   final queryParams =
       params != null && params.query.isNotEmpty ? '?${params.query}' : '';
 
-  return 'https://$id.${config.host}/$pathValue$queryParams';
+  return isValidUrl(id)
+      ? 'id$queryParams'
+      : 'https://$id.${config.host}/$pathValue$queryParams';
 }
 
 Future<Map<String, dynamic>> sendRequest(
