@@ -1,11 +1,12 @@
 import 'package:fal_client/client.dart';
 import 'package:flutter/material.dart';
 
-final fal = FalClient.withProxy("http://localhost:3333/api/_fal/proxy");
+// final fal = FalClient.withProxy("http://localhost:3333/api/_fal/proxy");
 
 // You can also use the credentials locally for development, but make sure
 // you protected your credentials behind a proxy in production.
-// final fal = FalClient.withCredentials("FAL_KEY_ID:FAL_KEY_SECRET");
+final fal = FalClient.withCredentials(
+    "adf7f57f-d316-41c3-bb12-552356340cfe:d16be5f12c0091c1dc22696a2fd07c9b");
 
 void main() {
   runApp(const MyApp());
@@ -80,7 +81,8 @@ class TextoToImageScreen extends StatefulWidget {
 
 class _TextoToImageScreenState extends State<TextoToImageScreen> {
   bool _isLoading = false;
-  final _promptController = TextEditingController();
+  final _promptController =
+      TextEditingController(text: "a cute shih-tzu puppy");
   ImageRef? _image;
 
   void _generateImage() async {
