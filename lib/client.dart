@@ -1,11 +1,10 @@
 library fal_client;
 
-import 'package:fal_client/storage.dart';
-
 import './config.dart';
 import './exception.dart';
 import './http.dart';
 import './queue.dart';
+import './storage.dart';
 
 abstract class Client {
   Queue get queue;

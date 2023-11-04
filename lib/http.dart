@@ -1,9 +1,9 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 import './config.dart';
 import './exception.dart';
+import './runtime.dart';
 
 bool isValidUrl(String url) {
   try {
@@ -14,6 +14,8 @@ bool isValidUrl(String url) {
   }
 }
 
+/// Builds a URL for the given [id], an optional [path], using the [config] to determine
+/// the host and input when present.
 String buildUrl(
   String id, {
   required Config config,
@@ -33,6 +35,12 @@ String buildUrl(
       : 'https://$id.${config.host}/$pathValue$queryParams';
 }
 
+/// Sends a request to the given [id], an optional [path]. It relies on
+/// [buildUrl] to determine the host and input when present.
+///
+/// When [config.proxyUrl] is present, it will be used as the base URL for the request,
+/// and send the `x-fal-target-url` header with the original URL, so server-side
+/// proxies can forward the request to [fal.ai](https://fal.ai).
 Future<Map<String, dynamic>> sendRequest(
   String id, {
   required Config config,
@@ -50,13 +58,15 @@ Future<Map<String, dynamic>> sendRequest(
   final headers = {
     'Accept': 'application/json',
     'Content-Type': 'application/json; charset=utf-8',
-    // 'User-Agent': getUserAgent(),
   };
   if (config.credentials.trim().isNotEmpty) {
     headers['Authorization'] = 'Key ${config.credentials}';
   }
   if (config.proxyUrl != null) {
     headers['x-fal-target-url'] = url;
+  }
+  if (getUserAgent() != null) {
+    headers['User-Agent'] = getUserAgent()!;
   }
 
   final request = http.Request(
@@ -65,7 +75,7 @@ Future<Map<String, dynamic>> sendRequest(
   );
   request.headers.addAll(headers);
 
-  if (input != null) {
+  if (method.toLowerCase() != 'get' && input != null) {
     request.body = jsonEncode(input);
   }
 

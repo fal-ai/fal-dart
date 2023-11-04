@@ -1,8 +1,9 @@
+import 'package:cross_file/cross_file.dart';
 import 'package:platform/platform.dart';
 
 // In Dart, we can use the dart:html library to check for browser-specific features
 bool isBrowser() {
-  return identical(1.0, 1); // This checks if we're on the JavaScript platform
+  return false;
 }
 
 String? _memoizedUserAgent;
@@ -10,17 +11,15 @@ String? _memoizedUserAgent;
 String? getUserAgent() {
   if (isBrowser()) {
     return null;
-    // return window.navigator.userAgent;
-    // return window.navigator.userAgent;
   }
   if (_memoizedUserAgent != null) {
     return _memoizedUserAgent!;
   }
 
-  const packageVersion = '1.0.0';
+  const packageVersion = '0.1.0';
 
   const platform = LocalPlatform();
   _memoizedUserAgent =
-      'fal.ai/dart-client@$packageVersion (${platform.operatingSystem} ${platform.version})';
+      'fal.ai/dart-client@$packageVersion (${platform.version} ${platform.operatingSystemVersion})';
   return _memoizedUserAgent!;
 }

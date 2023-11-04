@@ -1,6 +1,7 @@
 import './config.dart';
 import './http.dart';
 
+/// Data structure that represents the enqueued request and contains the [requestId].
 class EnqueueResult {
   String requestId;
 
@@ -11,6 +12,7 @@ class EnqueueResult {
   }
 }
 
+/// Data structure that represents a log entry in the queue.
 class RequestLog {
   String message;
   String timestamp;
@@ -28,6 +30,9 @@ class RequestLog {
   }
 }
 
+/// Data structure that represents the status of a request in the queue.
+/// This is the base class for the different statuses: [InProgressStatus],
+/// [CompletedStatus] and [InQueueStatus].
 abstract class QueueStatus {
   String status;
   String responseUrl;
@@ -49,7 +54,7 @@ abstract class QueueStatus {
 }
 
 class InProgressStatus extends QueueStatus {
-  List<RequestLog>? logs;
+  List<RequestLog> logs;
 
   InProgressStatus({
     required String responseUrl,
@@ -59,7 +64,7 @@ class InProgressStatus extends QueueStatus {
   factory InProgressStatus.fromMap(Map<String, dynamic> json) {
     return InProgressStatus(
       responseUrl: json['response_url'],
-      logs: (json['logs'] as List<dynamic>)
+      logs: ((json['logs'] ?? []) as List<dynamic>)
           .map((e) => RequestLog.fromMap(e as Map<String, dynamic>))
           .toList(),
     );
@@ -67,7 +72,7 @@ class InProgressStatus extends QueueStatus {
 }
 
 class CompletedStatus extends QueueStatus {
-  List<RequestLog>? logs;
+  List<RequestLog> logs;
 
   CompletedStatus({
     required String responseUrl,
@@ -77,7 +82,7 @@ class CompletedStatus extends QueueStatus {
   factory CompletedStatus.fromMap(Map<String, dynamic> json) {
     return CompletedStatus(
       responseUrl: json['response_url'],
-      logs: (json['logs'] as List<dynamic>)
+      logs: ((json['logs'] ?? []) as List<dynamic>)
           .map((e) => RequestLog.fromMap(e as Map<String, dynamic>))
           .toList(),
     );

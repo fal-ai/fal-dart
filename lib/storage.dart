@@ -8,12 +8,22 @@ bool isDataUri(String uri) {
   return uri.startsWith("data:");
 }
 
+/// This establishes the contract of the client with the file storage capabilities.
+/// Long running requests cannot keep files in memory, so models that require
+/// files/images as input need to upload them and submit their URLs instead.
+///
+/// This is done by the [StorageClient] class, which allows users to pass [XFile]
+/// instances as input, and have them automatically uploaded.
 abstract class Storage {
+  /// Uploads a file to the storage service and returns its URL.
   Future<String> upload(XFile file);
 
+  /// Transforms the input map, automatic uploading [XFile] instances using
+  /// [upload] and replacing them with their URLs.
   Future<Map<String, dynamic>> transformInput(Map<String, dynamic> input);
 }
 
+/// This is the default implementation of the [Storage] contract.
 class StorageClient implements Storage {
   final Config config;
 

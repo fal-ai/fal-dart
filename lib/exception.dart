@@ -1,3 +1,4 @@
+/// Base exception class for all exceptions thrown by the Fal library.
 class FalApiException implements Exception {
   final int status;
   final String message;
@@ -15,6 +16,10 @@ class FalApiException implements Exception {
   }
 }
 
+/// Exception thrown when the server returns a 422 status code.
+///
+/// It contains a list of [ValidationErrorInfo] instances that
+/// describe the validation errors.
 class ValidationErrorInfo {
   final String msg;
   final String type;
