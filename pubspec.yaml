@@ -1,6 +1,8 @@
 name: fal_client
-description: A client library for fal.ai ML APIs
-version: 0.1.0
+description: >
+  The Dart client library for fal.ai model APIs.
+  You can use it to call multiple AI models on your Dart and Flutter apps.
+version: 0.2.0
 homepage: https://fal.ai
 topics:
   - ai
