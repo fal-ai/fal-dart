@@ -4,6 +4,8 @@ description: >
   You can use it to call multiple AI models on your Dart and Flutter apps.
 version: 0.2.0
 homepage: https://fal.ai
+repository: https://github.com/fal-ai/serverless-client-dart
+issue_tracker: https://github.com/fal-ai/serverless-client-dart/issues?q=is%3Aissue+is%3Aopen
 topics:
   - ai
   - fal
