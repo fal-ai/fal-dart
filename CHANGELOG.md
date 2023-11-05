@@ -1,3 +1,12 @@
+## v0.2.0
+
+### What's Changed
+* feat: web support by @drochetti in https://github.com/fal-ai/serverless-client-dart/pull/2
+
+**Full Changelog**: https://github.com/fal-ai/serverless-client-dart/compare/v0.1.0...v0.2.0
+
+---
+
 ## v0.1.0
 
 ### What's Changed
