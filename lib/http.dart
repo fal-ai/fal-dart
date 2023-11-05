@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 import './config.dart';
 import './exception.dart';
-import './runtime.dart';
+import './runtime/platform.dart';
 
 bool isValidUrl(String url) {
   try {
@@ -13,6 +13,8 @@ bool isValidUrl(String url) {
     return false;
   }
 }
+
+final platform = PlatformInfo();
 
 /// Builds a URL for the given [id], an optional [path], using the [config] to determine
 /// the host and input when present.
@@ -59,14 +61,12 @@ Future<Map<String, dynamic>> sendRequest(
     'Accept': 'application/json',
     'Content-Type': 'application/json; charset=utf-8',
   };
+  headers[platform.userAgentHeader] = platform.userAgent;
   if (config.credentials.trim().isNotEmpty) {
     headers['Authorization'] = 'Key ${config.credentials}';
   }
   if (config.proxyUrl != null) {
-    headers['x-fal-target-url'] = url;
-  }
-  if (getUserAgent() != null) {
-    headers['User-Agent'] = getUserAgent()!;
+    headers['X-Fal-Target-Url'] = url;
   }
 
   final request = http.Request(
