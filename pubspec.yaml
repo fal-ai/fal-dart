@@ -1,7 +1,7 @@
 name: fal_client
 description: A client library for fal.ai ML APIs
 version: 0.1.0
-homepage: fal.ai
+homepage: https://fal.ai
 topics:
   - machine learning
   - artificial intelligence
