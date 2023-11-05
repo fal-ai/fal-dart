@@ -3,16 +3,11 @@ description: A client library for fal.ai ML APIs
 version: 0.1.0
 homepage: https://fal.ai
 topics:
-  - machine learning
-  - artificial intelligence
-  - ml
   - ai
+  - fal
   - stable-diffusion
   - sdxl
-  - whisper
   - text-to-image
-  - image-to-text
-  - speech-to-text
 
 environment:
   sdk: '>=3.1.5 <4.0.0'

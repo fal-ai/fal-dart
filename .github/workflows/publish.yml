@@ -5,9 +5,15 @@ on:
     tags:
     - 'v[0-9]+.[0-9]+.[0-9]+*'
 
-# Publish using the reusable workflow from dart-lang.
 jobs:
-  publish:
-    permissions:
-      id-token: write
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+  publishing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Publish package
+        uses: k-paxian/dart-package-publisher@v1.6
+        with:
+          accessToken: ${{ secrets.OAUTH_ACCESS_TOKEN }}
+          refreshToken: ${{ secrets.OAUTH_REFRESH_TOKEN }}
