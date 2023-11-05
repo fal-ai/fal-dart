@@ -53,6 +53,7 @@ abstract class QueueStatus {
   }
 }
 
+/// Indicates that the queue is currently processing the request.
 class InProgressStatus extends QueueStatus {
   List<RequestLog> logs;
 
@@ -71,6 +72,7 @@ class InProgressStatus extends QueueStatus {
   }
 }
 
+/// Indicates that the request has been completed and contains the [logs].
 class CompletedStatus extends QueueStatus {
   List<RequestLog> logs;
 
@@ -89,6 +91,7 @@ class CompletedStatus extends QueueStatus {
   }
 }
 
+/// Indicates that the request is still in the queue and contains the [queuePosition].
 class InQueueStatus extends QueueStatus {
   int queuePosition;
 
@@ -105,19 +108,27 @@ class InQueueStatus extends QueueStatus {
   }
 }
 
+/// This establishes the contract of the client with the queue API.
 abstract class Queue {
+  /// Submits a request to the given [id], an optional [path]. This method
+  /// uses the [queue] API to initiate the request. Next you need to rely on
+  /// [status] and [result] to poll for the result.
   Future<EnqueueResult> submit(
     String id, {
     String path = '',
     Map<String, dynamic>? input,
   });
 
+  /// Checks the queue for the status of the request with the given [requestId].
+  /// See [QueueStatus] for the different statuses.
   Future<QueueStatus> status(
     String id, {
     required String requestId,
     bool logs,
   });
 
+  /// Retrieves the result of the request with the given [requestId]
+  /// once the queue status is [CompletedStatus].
   Future<Map<String, dynamic>> result(String id, {required String requestId});
 }
 

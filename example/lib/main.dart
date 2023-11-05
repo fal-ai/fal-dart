@@ -1,12 +1,12 @@
 import 'package:fal_client/client.dart';
 import 'package:flutter/material.dart';
 
-// final fal = FalClient.withProxy("http://localhost:3333/api/_fal/proxy");
+// You can use the proxyUrl to protect your credentials in production.
+// final fal = FalClient.withProxy("http://localhost:3333/api/fal/proxy");
 
 // You can also use the credentials locally for development, but make sure
 // you protected your credentials behind a proxy in production.
-final fal = FalClient.withCredentials(
-    "adf7f57f-d316-41c3-bb12-552356340cfe:d16be5f12c0091c1dc22696a2fd07c9b");
+final fal = FalClient.withCredentials("fal_key_id:fal_key_secret");
 
 void main() {
   runApp(const MyApp());

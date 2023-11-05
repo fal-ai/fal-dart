@@ -6,11 +6,44 @@ import './http.dart';
 import './queue.dart';
 import './storage.dart';
 
+/// The main client class that provides access to simple API model usage,
+/// as well as access to the [queue] and [storage] APIs.
+///
+/// Example:
+///
+/// ```dart
+/// import 'package:fal_client/client.dart';
+///
+/// final fal = FalClient.withCredentials("fal_key_id:fal_key_secret");
+///
+/// void main() async {
+///   // check https://fal.ai/models for the available models
+///   final result = await fal.subscribe('text-to-image', input: {
+///     'prompt': 'a cute shih-tzu puppy',
+///     'model_name': 'stabilityai/stable-diffusion-xl-base-1.0',
+///   });
+///   print(result);
+/// }
+/// ```
 abstract class Client {
+  /// The queue client with specific methods to interact with the queue API.
+  ///
+  /// **Note:** that the [subscribe] method is a convenience method that uses the
+  /// [queue] client to submit a request and poll for the result.
   Queue get queue;
 
+  /// The storage client with specific methods to interact with the storage API.
+  ///
+  /// **Note:** both [run] and [subscribe] auto-upload files using the [storage]
+  /// when an [XFile] is passed as an input property value.
   Storage get storage;
 
+  /// Sends a request to the given [id], an optional [path]. This method
+  /// is a direct request to the model API and it waits for the processing
+  /// to complete before returning the result.
+  ///
+  /// This is useful for short running requests, but it's not recommended for
+  /// long running requests, for those see [submit].
   Future<Map<String, dynamic>> run(
     String id, {
     String method = 'post',
@@ -18,6 +51,11 @@ abstract class Client {
     Map<String, dynamic>? input,
   });
 
+  /// Submits a request to the given [id], an optional [path]. This method
+  /// uses the [queue] API to submit the request and poll for the result.
+  ///
+  /// This is useful for long running requests, and it's the preffered way
+  /// to interact with the model APIs.
   Future<Map<String, dynamic>> subscribe(
     String id, {
     String path = '',
