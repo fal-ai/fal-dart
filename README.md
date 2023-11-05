@@ -1,39 +1,67 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# The fal.ai Dart/Flutter client
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+![fal_client pub.dev package](https://img.shields.io/pub/v/fal_client?color=%237527D7&label=fal_client&style=flat-square)
+![Build](https://img.shields.io/github/actions/workflow/status/fal-ai/serverless-client-dart/build.yml?style=flat-square)
+![License](https://img.shields.io/github/license/fal-ai/serverless-client-dart?style=flat-square)
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+## About the Project
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+The `fal_client` is a robust and user-friendly library designed for seamless integration of fal serverless functions in Dart and Flutter projects. Developed in pure Dart, it provides developers with simple APIs to interact with AI models and works across all supported Flutter platforms.
 
-## Features
+## Getting Started
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+The `fal_client` library serves as a client for fal serverless Python functions. For guidance on creating your functions, refer to the [quickstart guide](https://fal.ai/docs).
 
-## Getting started
+### Client Library
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+This client library is crafted as a lightweight layer atop platform standards like `http` and `cross_file`. This ensures a hassle-free integration into your existing codebase. Moreover, it addresses platform disparities, guaranteeing flawless operation across various Flutter runtimes.
 
-## Usage
+> **Note:**
+> Ensure you've reviewed the [fal-serverless getting started guide](https://fal.ai/docs) to acquire your credentials and register your functions.
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+1. Start by adding `fal_client` as a dependency:
 
-```dart
-const like = 'sample';
+```sh
+flutter pub add fal_client
 ```
 
-## Additional information
+2. Setup the client instance:
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```dart
+import 'package:fal_client/client.dart';
+
+final fal = FalClient.withCredentials("FAL_KEY_ID:FAL_KEY_SECRET");
+```
+
+3. Now use `fal.subcribe` to dispatch requests to the model API:
+
+```dart
+final result = await fal.subscribe('text-to-image', input: {
+  'prompt': 'a cute shih-tzu puppy',
+  'model_name': 'stabilityai/stable-diffusion-xl-base-1.0',
+});
+```
+
+The result type is a `Map<String, dynamic>` and the entries depend on the API output schema. Types in Python are mapped to their corresponding types in Dart. Check [fal.ai/models](https://fal.ai/models) for all available model APIs.
+
+## Roadmap
+
+See the [open feature requests](https://github.com/fal-ai/serverless-client-dart/labels/enhancement) for a list of proposed features and join the discussion.
+
+## Contributing
+
+Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Make sure you read our [Code of Conduct](https://github.com/fal-ai/serverless-client-dart/blob/main/CODE_OF_CONDUCT.md)
+2. Fork the project and clone your fork
+3. Setup the local environment with `npm install`
+4. Create a feature branch (`git checkout -b feature/add-cool-thing`) or a bugfix branch (`git checkout -b fix/smash-that-bug`)
+5. Commit the changes (`git commit -m 'feat(client): added a cool thing'`) - use [conventional commits](https://conventionalcommits.org)
+6. Push to the branch (`git push --set-upstream origin feature/add-cool-thing`)
+7. Open a Pull Request
+
+Check the [good first issue queue](https://github.com/fal-ai/serverless-client-dart/labels/good+first+issue), your contribution will be welcome!
+
+## License
+
+Distributed under the MIT License. See [LICENSE](https://github.com/fal-ai/serverless-client-dart/blob/main/LICENSE) for more information.
