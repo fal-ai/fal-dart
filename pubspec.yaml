@@ -16,12 +16,9 @@ topics:
 
 environment:
   sdk: '>=3.1.5 <4.0.0'
-  flutter: '>=1.17.0'
 
 dependencies:
   cross_file: ^0.3.3+6
-  flutter:
-    sdk: flutter
   http: ^1.1.0
   platform: ^3.1.3
 
