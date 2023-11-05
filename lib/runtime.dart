@@ -1,4 +1,3 @@
-import 'package:cross_file/cross_file.dart';
 import 'package:platform/platform.dart';
 
 // In Dart, we can use the dart:html library to check for browser-specific features
