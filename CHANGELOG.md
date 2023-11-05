@@ -1,4 +1,4 @@
-### v0.1.0
+## v0.1.0
 
 ### What's Changed
 * feat: add build workflow by @drochetti in https://github.com/fal-ai/serverless-client-dart/pull/1

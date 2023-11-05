@@ -21,28 +21,32 @@ This client library is crafted as a lightweight layer atop platform standards li
 
 1. Start by adding `fal_client` as a dependency:
 
-```sh
-flutter pub add fal_client
-```
+  ```sh
+  flutter pub add fal_client
+  ```
 
 2. Setup the client instance:
 
-```dart
-import 'package:fal_client/client.dart';
+  ```dart
+  import 'package:fal_client/client.dart';
 
-final fal = FalClient.withCredentials("FAL_KEY_ID:FAL_KEY_SECRET");
-```
+  final fal = FalClient.withCredentials('FAL_KEY_ID:FAL_KEY_SECRET');
+  ```
 
 3. Now use `fal.subcribe` to dispatch requests to the model API:
 
-```dart
-final result = await fal.subscribe('text-to-image', input: {
-  'prompt': 'a cute shih-tzu puppy',
-  'model_name': 'stabilityai/stable-diffusion-xl-base-1.0',
-});
-```
+  ```dart
+  final result = await fal.subscribe('text-to-image', input: {
+    'prompt': 'a cute shih-tzu puppy',
+    'model_name': 'stabilityai/stable-diffusion-xl-base-1.0',
+  });
+  ```
 
-The result type is a `Map<String, dynamic>` and the entries depend on the API output schema. Types in Python are mapped to their corresponding types in Dart. Check [fal.ai/models](https://fal.ai/models) for all available model APIs.
+**Notes:**
+
+- Replace `text-to-image` with a valid model id. Check [fal.ai/models](https://fal.ai/models) for all available models.
+- The result type is a `Map<String, dynamic>` and the entries depend on the API output schema.
+- Types in Python are mapped to their corresponding types in Dart (e.g. `str` -> `String`).
 
 ## Roadmap
 
