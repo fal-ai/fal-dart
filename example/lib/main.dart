@@ -1,12 +1,14 @@
-import 'package:fal_client/client.dart';
+import 'package:fal_client/fal_client.dart';
 import 'package:flutter/material.dart';
 
+import 'types.dart';
+
 // You can use the proxyUrl to protect your credentials in production.
-// final fal = FalClient.withProxy("http://localhost:3333/api/fal/proxy");
+// final fal = FalClient.withProxy('http://localhost:3333/api/_fal/proxy');
 
 // You can also use the credentials locally for development, but make sure
 // you protected your credentials behind a proxy in production.
-final fal = FalClient.withCredentials("fal_key_id:fal_key_secret");
+final fal = FalClient.withCredentials('FAL_KEY_ID:FAL_KEY_SECRET');
 
 void main() {
   runApp(const MyApp());
@@ -29,38 +31,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class TextToImageResult {
-  final List<ImageRef> images;
-  final int seed;
-
-  TextToImageResult({required this.images, required this.seed});
-
-  factory TextToImageResult.fromMap(Map<String, dynamic> json) {
-    return TextToImageResult(
-      images: (json['images'] as List<dynamic>)
-          .map((e) => ImageRef.fromMap(e as Map<String, dynamic>))
-          .toList(),
-      seed: json['seed'],
-    );
-  }
-}
-
-class ImageRef {
-  final String url;
-  final int height;
-  final int width;
-
-  ImageRef({required this.url, required this.height, required this.width});
-
-  factory ImageRef.fromMap(Map<String, dynamic> json) {
-    return ImageRef(
-      url: json['url'],
-      height: json['height'],
-      width: json['width'],
-    );
-  }
-}
-
 class TextoToImageScreen extends StatefulWidget {
   const TextoToImageScreen({super.key, required this.title});
 
@@ -71,7 +41,7 @@ class TextoToImageScreen extends StatefulWidget {
   // This class is the configuration for the state. It holds the values (in this
   // case the title) provided by the parent (in this case the App widget) and
   // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  // always marked 'final'.
 
   final String title;
 
@@ -82,7 +52,7 @@ class TextoToImageScreen extends StatefulWidget {
 class _TextoToImageScreenState extends State<TextoToImageScreen> {
   bool _isLoading = false;
   final _promptController =
-      TextEditingController(text: "a cute shih-tzu puppy");
+      TextEditingController(text: 'a cute shih-tzu puppy');
   ImageRef? _image;
 
   void _generateImage() async {
@@ -90,11 +60,13 @@ class _TextoToImageScreenState extends State<TextoToImageScreen> {
       _isLoading = true;
       _image = null;
     });
-    final result = await fal.subscribe("110602490-lora", input: {
-      "prompt": _promptController.text,
-      "model_name": "stabilityai/stable-diffusion-xl-base-1.0",
-      "image_size": "square_hd"
-    });
+    final result = await fal.subscribe(textToImageId,
+        input: {
+          'prompt': _promptController.text,
+          'model_name': 'stabilityai/stable-diffusion-xl-base-1.0',
+          'image_size': 'square_hd'
+        },
+        onQueueUpdate: (update) => {print(update)});
     setState(() {
       _isLoading = false;
       _image = TextToImageResult.fromMap(result).images[0];

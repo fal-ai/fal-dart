@@ -1,3 +1,12 @@
+## v0.2.1
+
+### What's Changed
+* chore: reorg package exports by @drochetti in https://github.com/fal-ai/serverless-client-dart/pull/3
+
+**Full Changelog**: https://github.com/fal-ai/serverless-client-dart/compare/v0.2.0...v0.2.1
+
+---
+
 ## v0.2.0
 
 ### What's Changed
