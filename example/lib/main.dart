@@ -1,4 +1,4 @@
-import 'package:fal_client/client.dart';
+import 'package:fal_client/fal_client.dart';
 import 'package:flutter/material.dart';
 
 // You can use the proxyUrl to protect your credentials in production.
@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 // You can also use the credentials locally for development, but make sure
 // you protected your credentials behind a proxy in production.
-final fal = FalClient.withCredentials("fal_key_id:fal_key_secret");
+final fal = FalClient.withCredentials("FAL_KEY_ID:FAL_KEY_SECRET");
 
 void main() {
   runApp(const MyApp());
@@ -94,6 +94,8 @@ class _TextoToImageScreenState extends State<TextoToImageScreen> {
       "prompt": _promptController.text,
       "model_name": "stabilityai/stable-diffusion-xl-base-1.0",
       "image_size": "square_hd"
+    }, onQueueUpdate: (update) => {
+      print(update)
     });
     setState(() {
       _isLoading = false;

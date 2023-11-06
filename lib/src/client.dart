@@ -1,5 +1,3 @@
-library fal_client;
-
 import './config.dart';
 import './exception.dart';
 import './http.dart';
