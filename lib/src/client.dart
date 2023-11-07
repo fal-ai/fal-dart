@@ -63,6 +63,7 @@ abstract class Client {
   });
 }
 
+/// The default implementation of the [Client] contract.
 class FalClient implements Client {
   final Config config;
 

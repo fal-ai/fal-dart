@@ -1,14 +1,12 @@
-class TextToImageResult {
-  final List<ImageRef> images;
+class IllusionDiffusionResult {
+  final ImageRef image;
   final int seed;
 
-  TextToImageResult({required this.images, required this.seed});
+  IllusionDiffusionResult({required this.image, required this.seed});
 
-  factory TextToImageResult.fromMap(Map<String, dynamic> json) {
-    return TextToImageResult(
-      images: (json['images'] as List<dynamic>)
-          .map((e) => ImageRef.fromMap(e as Map<String, dynamic>))
-          .toList(),
+  factory IllusionDiffusionResult.fromMap(Map<String, dynamic> json) {
+    return IllusionDiffusionResult(
+      image: ImageRef.fromMap(json['image'] as Map<String, dynamic>),
       seed: (json['seed'] * 1).round(),
     );
   }
@@ -30,4 +28,4 @@ class ImageRef {
   }
 }
 
-const textToImageId = '110602490-lora';
+const textToImageId = '54285744-illusion-diffusion';

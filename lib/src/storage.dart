@@ -4,10 +4,6 @@ import 'package:http/http.dart' as http;
 import './config.dart';
 import './http.dart';
 
-bool isDataUri(String uri) {
-  return uri.startsWith("data:");
-}
-
 /// This establishes the contract of the client with the file storage capabilities.
 /// Long running requests cannot keep files in memory, so models that require
 /// files/images as input need to upload them and submit their URLs instead.
@@ -38,7 +34,7 @@ class StorageClient implements Storage {
     final contentType = file.mimeType ?? 'application/octet-stream';
     final signedUpload = await sendRequest(url,
         input: {
-          'filename': file.name,
+          'file_name': file.name,
           'content_type': contentType,
         },
         config: config);

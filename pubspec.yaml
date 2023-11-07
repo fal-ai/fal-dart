@@ -2,7 +2,7 @@ name: fal_client
 description: >
   The Dart client library for fal.ai model APIs.
   You can use it to call multiple AI models on your Dart and Flutter apps.
-version: 0.2.1
+version: 0.2.2
 homepage: https://fal.ai
 repository: https://github.com/fal-ai/serverless-client-dart
 issue_tracker: https://github.com/fal-ai/serverless-client-dart/issues?q=is%3Aissue+is%3Aopen

@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>$(PRODUCT_NAME) need access to your photo gallery so you can pick image patterns</string>
 </dict>
 </plist>
