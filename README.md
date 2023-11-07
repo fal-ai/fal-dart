@@ -36,7 +36,7 @@ This client library is crafted as a lightweight layer atop platform standards li
 3. Now use `fal.subcribe` to dispatch requests to the model API:
 
   ```dart
-  final result = await fal.subscribe('110602490-lora',
+  final result = await fal.subscribe('text-to-image',
     input: {
       'prompt': 'a cute shih-tzu puppy',
       'model_name': 'stabilityai/stable-diffusion-xl-base-1.0',

@@ -33,7 +33,7 @@ String buildUrl(
       params != null && params.query.isNotEmpty ? '?${params.query}' : '';
 
   return isValidUrl(id)
-      ? 'id$queryParams'
+      ? '$id$queryParams'
       : 'https://$id.${config.host}/$pathValue$queryParams';
 }
 
@@ -66,7 +66,7 @@ Future<Map<String, dynamic>> sendRequest(
     headers['Authorization'] = 'Key ${config.credentials}';
   }
   if (config.proxyUrl != null) {
-    headers['X-Fal-Target-Url'] = url;
+    headers['x-fal-target-url'] = url;
   }
 
   final request = http.Request(
