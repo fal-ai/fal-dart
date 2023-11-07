@@ -1,3 +1,12 @@
+## v0.2.2
+
+### What's Changed
+* feat: file uploads and new sample app by @drochetti in https://github.com/fal-ai/serverless-client-dart/pull/4
+
+**Full Changelog**: https://github.com/fal-ai/serverless-client-dart/compare/v0.2.1...v0.2.2
+
+---
+
 ## v0.2.1
 
 ### What's Changed
