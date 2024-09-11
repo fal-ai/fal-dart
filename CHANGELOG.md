@@ -1,3 +1,11 @@
+## What's Changed
+* feat: updated queue implementation by @drochetti in https://github.com/fal-ai/fal-dart/pull/7
+
+
+**Full Changelog**: https://github.com/fal-ai/fal-dart/compare/v0.2.2...v0.3.0
+
+---
+
 ## v0.2.2
 
 ### What's Changed
