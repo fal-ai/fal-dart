@@ -1,3 +1,6 @@
+import 'package:fal_client/src/common.dart';
+import 'package:fal_client/src/util.dart';
+
 import './config.dart';
 import './http.dart';
 
@@ -109,61 +112,72 @@ class InQueueStatus extends QueueStatus {
 }
 
 /// This establishes the contract of the client with the queue API.
-abstract class Queue {
-  /// Submits a request to the given [id], an optional [path]. This method
+abstract class QueueClient {
+  /// Submits a request to the given [endpointId]. This method
   /// uses the [queue] API to initiate the request. Next you need to rely on
   /// [status] and [result] to poll for the result.
-  Future<EnqueueResult> submit(
-    String id, {
-    String path = '',
-    Map<String, dynamic>? input,
-  });
+  ///
+  /// The [webhookUrl] is the URL where the server will send the result once
+  /// the request is completed. This is particularly useful when you want to
+  /// receive the result in a different server and for long running requests.
+  Future<EnqueueResult> submit(String endpointId,
+      {Map<String, dynamic>? input, String? webhookUrl});
 
   /// Checks the queue for the status of the request with the given [requestId].
   /// See [QueueStatus] for the different statuses.
   Future<QueueStatus> status(
-    String id, {
+    String endpointId, {
     required String requestId,
     bool logs,
   });
 
   /// Retrieves the result of the request with the given [requestId]
   /// once the queue status is [CompletedStatus].
-  Future<Map<String, dynamic>> result(String id, {required String requestId});
+  Future<FalOutput> result(String endpointId, {required String requestId});
 }
 
-class QueueClient implements Queue {
+class QueueClientImpl implements QueueClient {
   final Config config;
 
-  QueueClient({required this.config});
+  QueueClientImpl({required this.config});
 
   @override
-  Future<EnqueueResult> submit(String id,
-      {String path = '', Map<String, dynamic>? input}) async {
-    final result = await sendRequest(id,
-        config: config, path: '/fal/queue/submit$path', input: input);
+  Future<EnqueueResult> submit(String endpointId,
+      {Map<String, dynamic>? input, String? webhookUrl}) async {
+    final queryParams = {
+      if (webhookUrl != null) 'fal_webhook': webhookUrl,
+    };
+    final response = await sendRequest(endpointId,
+        config: config, subdomain: "queue", input: input, query: queryParams);
+    final result = await handleJsonResponse(response);
     return EnqueueResult.fromMap(result);
   }
 
   @override
-  Future<QueueStatus> status(String id,
+  Future<QueueStatus> status(String endpointId,
       {required String requestId, bool logs = false}) async {
-    final result = await sendRequest(id,
+    final id = parseEndpointId(endpointId);
+    final response = await sendRequest("${id.owner}/${id.alias}",
         config: config,
         method: 'get',
-        path: '/fal/queue/requests/$requestId/status',
+        path: '/requests/$requestId/status',
+        subdomain: "queue",
         input: {
           'logs': logs ? '1' : '0',
         });
+    final result = await handleJsonResponse(response);
     return QueueStatus.fromMap(result);
   }
 
   @override
-  Future<Map<String, dynamic>> result(String id,
+  Future<FalOutput> result(String endpointId,
       {required String requestId}) async {
-    return sendRequest(id,
+    final id = parseEndpointId(endpointId);
+    final response = await sendRequest("${id.owner}/${id.alias}",
         config: config,
         method: 'get',
-        path: '/fal/queue/requests/$requestId/response');
+        path: '/requests/$requestId',
+        subdomain: "queue");
+    return convertResponseToOutput(response);
   }
 }

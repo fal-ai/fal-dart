@@ -1,12 +1,17 @@
-class IllusionDiffusionResult {
-  final ImageRef image;
+class FluxOutput {
+  final List<ImageRef> images;
   final int seed;
 
-  IllusionDiffusionResult({required this.image, required this.seed});
+  FluxOutput({
+    required this.images,
+    required this.seed,
+  });
 
-  factory IllusionDiffusionResult.fromMap(Map<String, dynamic> json) {
-    return IllusionDiffusionResult(
-      image: ImageRef.fromMap(json['image'] as Map<String, dynamic>),
+  factory FluxOutput.fromMap(Map<String, dynamic> json) {
+    return FluxOutput(
+      images: ((json['images'] ?? []) as List<dynamic>)
+          .map((e) => ImageRef.fromMap(e as Map<String, dynamic>))
+          .toList(),
       seed: (json['seed'] * 1).round(),
     );
   }
@@ -27,5 +32,3 @@ class ImageRef {
     );
   }
 }
-
-const textToImageId = '54285744-illusion-diffusion';

@@ -3,6 +3,30 @@ import './exception.dart';
 import './http.dart';
 import './queue.dart';
 import './storage.dart';
+import 'common.dart';
+
+abstract class SubscriptionMode {
+  static const SubscriptionMode streaming = StreamingMode();
+  static const SubscriptionMode polling = PollingMode();
+
+  static SubscriptionMode pollingWithInterval(Duration interval) {
+    return PollingMode(pollInterval: interval);
+  }
+
+  const SubscriptionMode();
+}
+
+class PollingMode extends SubscriptionMode {
+  final Duration pollInterval;
+
+  const PollingMode({
+    this.pollInterval = const Duration(milliseconds: 500),
+  }) : super();
+}
+
+class StreamingMode extends SubscriptionMode {
+  const StreamingMode() : super();
+}
 
 /// The main client class that provides access to simple API model usage,
 /// as well as access to the [queue] and [storage] APIs.
@@ -12,135 +36,146 @@ import './storage.dart';
 /// ```dart
 /// import 'package:fal_client/client.dart';
 ///
-/// final fal = FalClient.withCredentials("fal_key_id:fal_key_secret");
+/// final fal = FalClient.withCredentials("FAL_KEY");
 ///
 /// void main() async {
 ///   // check https://fal.ai/models for the available models
-///   final result = await fal.subscribe('text-to-image', input: {
+///   final output = await fal.subscribe('fal-ai/flux/dev', input: {
 ///     'prompt': 'a cute shih-tzu puppy',
-///     'model_name': 'stabilityai/stable-diffusion-xl-base-1.0',
 ///   });
-///   print(result);
+///   print(output.data);
+///   print(output.requestId);
 /// }
 /// ```
-abstract class Client {
+abstract class FalClient {
   /// The queue client with specific methods to interact with the queue API.
   ///
   /// **Note:** that the [subscribe] method is a convenience method that uses the
   /// [queue] client to submit a request and poll for the result.
-  Queue get queue;
+  QueueClient get queue;
 
   /// The storage client with specific methods to interact with the storage API.
   ///
   /// **Note:** both [run] and [subscribe] auto-upload files using the [storage]
   /// when an [XFile] is passed as an input property value.
-  Storage get storage;
+  StorageClient get storage;
 
-  /// Sends a request to the given [id], an optional [path]. This method
+  /// Sends a request to the given [endpointId]. This method
   /// is a direct request to the model API and it waits for the processing
   /// to complete before returning the result.
   ///
   /// This is useful for short running requests, but it's not recommended for
   /// long running requests, for those see [submit].
-  Future<Map<String, dynamic>> run(
-    String id, {
+  Future<FalOutput> run(
+    String endpointId, {
     String method = 'post',
-    String path = '',
     Map<String, dynamic>? input,
   });
 
-  /// Submits a request to the given [id], an optional [path]. This method
+  /// Submits a request to the given [endpointId]. This method
   /// uses the [queue] API to submit the request and poll for the result.
   ///
   /// This is useful for long running requests, and it's the preffered way
   /// to interact with the model APIs.
-  Future<Map<String, dynamic>> subscribe(
-    String id, {
-    String path = '',
-    Map<String, dynamic>? input,
-    int pollInterval = 3000,
-    bool logs = false,
-  });
-}
-
-/// The default implementation of the [Client] contract.
-class FalClient implements Client {
-  final Config config;
-
-  @override
-  final Queue queue;
-
-  @override
-  final Storage storage;
-
-  FalClient({
-    required this.config,
-  })  : queue = QueueClient(config: config),
-        storage = StorageClient(config: config);
+  ///
+  /// The [webhookUrl] is the URL where the server will send the result once
+  /// the request is completed. This is particularly useful when you want to
+  /// receive the result in a different server and for long running requests.
+  Future<FalOutput> subscribe(String endpointId,
+      {Map<String, dynamic>? input,
+      SubscriptionMode mode,
+      Duration timeout = const Duration(minutes: 5),
+      bool logs = false,
+      String? webhookUrl,
+      Function(String)? onEnqueue,
+      Function(QueueStatus)? onQueueUpdate});
 
   factory FalClient.withProxy(String proxyUrl) {
-    return FalClient(config: Config(proxyUrl: proxyUrl));
+    return FalClientImpl(config: Config(proxyUrl: proxyUrl));
   }
 
   factory FalClient.withCredentials(String credentials) {
-    return FalClient(config: Config(credentials: credentials));
+    return FalClientImpl(config: Config(credentials: credentials));
   }
+}
+
+/// The default implementation of the [Client] contract.
+class FalClientImpl implements FalClient {
+  final Config config;
 
   @override
-  Future<Map<String, dynamic>> run(
-    String id, {
+  final QueueClient queue;
+
+  @override
+  final StorageClient storage;
+
+  FalClientImpl({
+    required this.config,
+  })  : queue = QueueClientImpl(config: config),
+        storage = StorageClientImpl(config: config);
+
+  @override
+  Future<FalOutput> run(
+    String endpointId, {
     String method = 'post',
-    String path = '',
     Map<String, dynamic>? input,
   }) async {
     final transformedInput =
         input != null ? await storage.transformInput(input) : null;
-    return await sendRequest(
-      id,
+    final response = await sendRequest(
+      endpointId,
       config: config,
       method: method,
       input: transformedInput,
     );
+    return convertResponseToOutput(response);
   }
 
   @override
-  Future<Map<String, dynamic>> subscribe(String id,
-      {String path = '',
-      Map<String, dynamic>? input,
-      int pollInterval = 3000, // 3 seconds
-      int timeout = 300000, // 5 minutes
+  Future<FalOutput> subscribe(String endpointId,
+      {Map<String, dynamic>? input,
+      SubscriptionMode mode = SubscriptionMode.polling,
+      Duration timeout = const Duration(minutes: 5),
       bool logs = false,
+      String? webhookUrl,
       Function(String)? onEnqueue,
       Function(QueueStatus)? onQueueUpdate}) async {
     final transformedInput =
         input != null ? await storage.transformInput(input) : null;
-    final enqueued =
-        await queue.submit(id, input: transformedInput, path: path);
+    final enqueued = await queue.submit(endpointId,
+        input: transformedInput, webhookUrl: webhookUrl);
+    if (onEnqueue != null) {
+      onEnqueue(enqueued.requestId);
+    }
     final requestId = enqueued.requestId;
 
     if (onEnqueue != null) {
       onEnqueue(requestId);
     }
 
-    return _pollForResult(
-      id,
-      requestId: requestId,
-      logs: logs,
-      pollInterval: pollInterval,
-      timeout: timeout,
-      onQueueUpdate: onQueueUpdate,
-    );
+    if (mode is PollingMode) {
+      return _pollForResult(
+        endpointId,
+        requestId: requestId,
+        logs: logs,
+        pollInterval: mode.pollInterval,
+        timeout: timeout,
+        onQueueUpdate: onQueueUpdate,
+      );
+    }
+
+    throw UnimplementedError('Streaming mode is not yet implemented.');
   }
 
-  Future<Map<String, dynamic>> _pollForResult(
-    String id, {
+  Future<FalOutput> _pollForResult(
+    String endpointId, {
     required String requestId,
     required bool logs,
-    required int pollInterval,
-    required int timeout,
+    required Duration pollInterval,
+    required Duration timeout,
     Function(QueueStatus)? onQueueUpdate,
   }) async {
-    final expiryTime = DateTime.now().add(Duration(milliseconds: timeout));
+    final expiryTime = DateTime.now().add(timeout);
 
     while (true) {
       if (DateTime.now().isAfter(expiryTime)) {
@@ -149,16 +184,16 @@ class FalClient implements Client {
             status: 408);
       }
       final queueStatus =
-          await queue.status(id, requestId: requestId, logs: logs);
+          await queue.status(endpointId, requestId: requestId, logs: logs);
 
       if (onQueueUpdate != null) {
         onQueueUpdate(queueStatus);
       }
 
       if (queueStatus is CompletedStatus) {
-        return await queue.result(id, requestId: requestId);
+        return await queue.result(endpointId, requestId: requestId);
       }
-      await Future.delayed(Duration(milliseconds: pollInterval));
+      await Future.delayed(pollInterval);
     }
   }
 }

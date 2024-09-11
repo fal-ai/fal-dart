@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:fal_client/src/common.dart';
 import 'package:http/http.dart' as http;
 
 import './config.dart';
@@ -8,7 +9,7 @@ import './runtime/platform.dart';
 bool isValidUrl(String url) {
   try {
     final uri = Uri.parse(url);
-    return uri.host.contains("fal.ai");
+    return uri.host.contains("fal.ai") || uri.host.contains("fal.run");
   } catch (e) {
     return false;
   }
@@ -16,46 +17,60 @@ bool isValidUrl(String url) {
 
 final platform = PlatformInfo();
 
-/// Builds a URL for the given [id], an optional [path], using the [config] to determine
+/// Builds a URL for the given [endpointId], an optional [path], using the [config] to determine
 /// the host and input when present.
 String buildUrl(
-  String id, {
+  String endpointId, {
   required Config config,
   String method = 'post',
   String path = '',
+  String subdomain = '',
   Map<String, dynamic>? input,
+  Map<String, String>? query,
 }) {
-  final pathValue = path.replaceAll(RegExp(r'^/|/{2,}'), '');
-  final params = method.toLowerCase() == 'get' && input != null
+  final pathValue = path.replaceAll(RegExp(r'/{2,}|/$'), '');
+  var params = method.toLowerCase() == 'get' && input != null
       ? Uri(queryParameters: input)
       : null;
+  if (query != null && query.isNotEmpty) {
+    if (params != null) {
+      params.queryParameters.addAll(query);
+    } else {
+      params = Uri(queryParameters: query);
+    }
+  }
   final queryParams =
       params != null && params.query.isNotEmpty ? '?${params.query}' : '';
 
-  return isValidUrl(id)
-      ? '$id$queryParams'
-      : 'https://$id.${config.host}/$pathValue$queryParams';
+  final subdomainValue = subdomain.isNotEmpty ? '$subdomain.' : '';
+  return isValidUrl(endpointId)
+      ? '$endpointId$queryParams'
+      : 'https://${subdomainValue}fal.run/${endpointId}$pathValue$queryParams';
 }
 
-/// Sends a request to the given [id], an optional [path]. It relies on
+/// Sends a request to the given [endpointId], an optional [path]. It relies on
 /// [buildUrl] to determine the host and input when present.
 ///
 /// When [config.proxyUrl] is present, it will be used as the base URL for the request,
 /// and send the `x-fal-target-url` header with the original URL, so server-side
 /// proxies can forward the request to [fal.ai](https://fal.ai).
-Future<Map<String, dynamic>> sendRequest(
-  String id, {
+Future<http.StreamedResponse> sendRequest(
+  String endpointId, {
   required Config config,
   String method = 'post',
   String path = '',
+  String subdomain = '',
   Map<String, dynamic>? input,
+  Map<String, String>? query,
 }) async {
   final url = buildUrl(
-    id,
+    endpointId,
     config: config,
     method: method,
     path: path,
+    subdomain: subdomain,
     input: input,
+    query: query,
   );
   final headers = {
     'Accept': 'application/json',
@@ -79,9 +94,12 @@ Future<Map<String, dynamic>> sendRequest(
     request.body = jsonEncode(input);
   }
 
-  final response = await request.send();
-  final body = await response.stream.bytesToString();
+  return request.send();
+}
 
+Future<Map<String, dynamic>> handleJsonResponse(
+    http.StreamedResponse response) async {
+  final body = await response.stream.bytesToString();
   if (response.statusCode >= 200 && response.statusCode < 300) {
     return jsonDecode(body);
   }
@@ -93,4 +111,11 @@ Future<Map<String, dynamic>> sendRequest(
 
   throw FalApiException(
       status: response.statusCode, message: body, body: jsonDecode(body));
+}
+
+Future<FalOutput> convertResponseToOutput(
+    http.StreamedResponse response) async {
+  final data = await handleJsonResponse(response);
+  final requestId = response.headers['x-fal-request-id'] ?? '';
+  return FalOutput(data: data, requestId: requestId);
 }

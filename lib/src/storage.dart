@@ -8,9 +8,9 @@ import './http.dart';
 /// Long running requests cannot keep files in memory, so models that require
 /// files/images as input need to upload them and submit their URLs instead.
 ///
-/// This is done by the [StorageClient] class, which allows users to pass [XFile]
+/// This is done by the [StorageClientImpl] class, which allows users to pass [XFile]
 /// instances as input, and have them automatically uploaded.
-abstract class Storage {
+abstract class StorageClient {
   /// Uploads a file to the storage service and returns its URL.
   Future<String> upload(XFile file);
 
@@ -20,25 +20,26 @@ abstract class Storage {
 }
 
 /// This is the default implementation of the [Storage] contract.
-class StorageClient implements Storage {
+class StorageClientImpl implements StorageClient {
   final Config config;
 
-  StorageClient({
+  StorageClientImpl({
     required this.config,
   });
 
   @override
   Future<String> upload(XFile file) async {
-    final restDomain = config.host.replaceFirst("gateway", "rest");
+    // TODO parameterize the domain
+    final restDomain = "rest.alpha.fal.ai";
     final url = 'https://${restDomain}/storage/upload/initiate';
     final contentType = file.mimeType ?? 'application/octet-stream';
-    final signedUpload = await sendRequest(url,
+    final response = await sendRequest(url,
         input: {
           'file_name': file.name,
           'content_type': contentType,
         },
         config: config);
-
+    final signedUpload = await handleJsonResponse(response);
     final uploadUrl = signedUpload['upload_url'];
     final data = await file.readAsBytes();
     await http.put(
