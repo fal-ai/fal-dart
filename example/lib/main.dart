@@ -1,15 +1,14 @@
 import 'package:fal_client/fal_client.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'types.dart';
 
 // You can use the proxyUrl to protect your credentials in production.
-// final fal = FalClient.withProxy('http://localhost:3333/api/_fal/proxy');
+// final fal = FalClient.withProxy('http://localhost:3333/api/fal/proxy');
 
 // You can also use the credentials locally for development, but make sure
 // you protected your credentials behind a proxy in production.
-final fal = FalClient.withCredentials('FAL_KEY_ID:FAL_KEY_SECRET');
+final fal = FalClient.withCredentials('FAL_KEY');
 
 void main() {
   runApp(const FalSampleApp());
@@ -42,29 +41,26 @@ class TextoToImageScreen extends StatefulWidget {
 }
 
 class _TextoToImageScreenState extends State<TextoToImageScreen> {
-  final ImagePicker _picker = ImagePicker();
-  XFile? _image;
   final TextEditingController _promptController = TextEditingController();
   String? _generatedImageUrl;
   bool _isProcessing = false;
 
-  Future<String> generateImage(XFile image, String prompt) async {
-    final result = await fal.subscribe(textToImageId, input: {
-      'prompt': prompt,
-      'image_url': image,
-    });
-    return result['image']['url'] as String;
+  Future<String> generateImage(String prompt) async {
+    final output = await fal.subscribe("fal-ai/flux/dev",
+        input: {
+          'prompt': prompt,
+        },
+        mode: SubscriptionMode.pollingWithInterval(Duration(seconds: 1)));
+    print(output.requestId);
+    final data = FluxOutput.fromMap(output.data);
+    return data.images.first.url;
   }
 
   void _onGenerateImage() async {
-    if (_image == null || _promptController.text.isEmpty) {
-      // Handle error: either image not selected or prompt not entered
-      return;
-    }
     setState(() {
       _isProcessing = true;
     });
-    String imageUrl = await generateImage(_image!, _promptController.text);
+    String imageUrl = await generateImage(_promptController.text);
     setState(() {
       _generatedImageUrl = imageUrl;
       _isProcessing = false;
@@ -75,7 +71,7 @@ class _TextoToImageScreenState extends State<TextoToImageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Illusion Diffusion'),
+        title: const Text('FLUX.1 [dev]'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -83,18 +79,6 @@ class _TextoToImageScreenState extends State<TextoToImageScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            ElevatedButton(
-              onPressed: () async {
-                final XFile? image =
-                    await _picker.pickImage(source: ImageSource.gallery);
-                setState(() {
-                  _image = image;
-                });
-              },
-              child: const Text('Pick Image'),
-            ),
-            // if (_image != null)
-            // Image,
             TextFormField(
               controller: _promptController,
               decoration: const InputDecoration(labelText: 'Imagine...'),
